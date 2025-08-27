@@ -16,9 +16,16 @@ class userController extends Controller
         return redirect('/');
     }
 
-        public function login(){
-        Auth::login();
-        return redirect('/');
+        public function login(Request $request){
+        $incomingFields = $request ->validate([
+            'login_name'=>'required',
+            'login_password'=>'required',
+        ]);
+        if(Auth::attempt(['name' => $incomingFields['login_name'], 'password'=> $incomingFields['login_password']])){
+            $request->session()->regenerate();
+            return redirect('/');
+        }
+        return back()->withErrors(['login' => 'Invalid credentials.'])->withInput();
     }
 
     public function register(Request $request){
@@ -30,7 +37,7 @@ class userController extends Controller
 
         $incomingFields['password']= bcrypt($incomingFields['password']);
         $user = User::create($incomingFields);
-        auth::login($user);
+        Auth::login($user);
         return redirect('/');
      
     }
